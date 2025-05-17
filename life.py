@@ -13,6 +13,8 @@ GRAY = (128, 128, 128)
 BLUE = (50, 50, 200)
 CELL_SIZE = 20
 FONT_SIZE = 24
+MIN_GRID_WIDTH = 10  # Minimum grid width in cells
+MIN_GRID_HEIGHT = 10  # Minimum grid height in cells
 
 class GameOfLife:
     def __init__(self, width: int, height: int, fps: int):
@@ -97,7 +99,7 @@ class GameOfLife:
                         continue
                     try:
                         x, y = map(int, line.strip().split(","))
-                        if 0 <= x < self.width and 0 <= ny < self.height:
+                        if 0 <= x < self.width and 0 <= y < self.height:
                             self.live_cells.add((x, y))
                     except ValueError:
                         continue
@@ -123,14 +125,29 @@ class GameOfLife:
         pygame.display.flip()
 
     def handle_resize(self, event):
-        """Handle window resize."""
-        new_width = max(20, event.w // CELL_SIZE)
-        new_height = max(20, (event.h - 50) // CELL_SIZE)
-        self.width = new_width
-        self.height = new_height
-        self.screen = pygame.display.set_mode((self.width * CELL_SIZE, self.height * CELL_SIZE + 50), pygame.RESIZABLE)
-        # Remove cells outside new bounds
-        self.live_cells = {(x, y) for x, y in self.live_cells if 0 <= x < self.width and 0 <= y < self.height}
+        """Handle window resize, including minimizing and maximizing."""
+        # Skip resizing if window is minimized (very small dimensions)
+        if event.w < CELL_SIZE * MIN_GRID_WIDTH or event.h < CELL_SIZE * MIN_GRID_HEIGHT + 50:
+            return  # Do nothing when minimized
+
+        # Calculate new grid dimensions
+        new_width = max(MIN_GRID_WIDTH, event.w // CELL_SIZE)
+        new_height = max(MIN_GRID_HEIGHT, (event.h - 50) // CELL_SIZE)
+
+        # Only update if dimensions have changed
+        if new_width != self.width or new_height != self.height:
+            self.width = new_width
+            self.height = new_height
+            # Resize the display
+            self.screen = pygame.display.set_mode(
+                (self.width * CELL_SIZE, self.height * CELL_SIZE + 50),
+                pygame.RESIZABLE
+            )
+            # Filter live cells to fit new grid (only if necessary)
+            self.live_cells = {
+                (x, y) for x, y in self.live_cells
+                if 0 <= x < self.width and 0 <= y < self.height
+            }
 
     def run(self):
         """Main game loop."""

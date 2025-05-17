@@ -81,7 +81,7 @@ pytest -q
 
 ## Demo
 
-Watch the demo video *(Replace with your Google Drive or YouTube link after uploading)*
+Watch the demo video *https://youtu.be/hakyxj8TJPM*
 
 ## Project Structure
 
